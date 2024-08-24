@@ -234,7 +234,7 @@ Finally, identical messages made to not collide by Lighthouse with a `meaning` c
 
 1.  String called in `.js` file, converted to `LH.IcuMessage` object.
 
-1.  Message object is replaced with the localized string via
+2.  Message object is replaced with the localized string via
     `format.replaceIcuMessages` and `format.getFormatted`.
 
 #### Example:

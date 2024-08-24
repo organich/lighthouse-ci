@@ -39,13 +39,13 @@ We follow [semver](https://semver.org/) versioning semantics (`vMajor.Minor.Patc
 In general, Lighthouse should be using the latest version of all of these dependencies:
 
 1. https://github.com/GoogleChrome/lighthouse-stack-packs
-1. `puppeteer` and `puppeteer-core`
-1. `third-party-web`
-1. `axe-core`
-1. `js-library-detector`
-1. `chrome-launcher`
-1. `chrome-devtools-frontend`
-1. `devtools-protocol`
+2. `puppeteer` and `puppeteer-core`
+3. `third-party-web`
+4. `axe-core`
+5. `js-library-detector`
+6. `chrome-launcher`
+7. `chrome-devtools-frontend`
+8. `devtools-protocol`
 
 ### On the scheduled release date
 
@@ -72,8 +72,8 @@ bash ./core/scripts/release/prepare-commit.sh x.x.x
 ```
 
 1. Edit changelog.md before opening the PR
-1. Open the PR with title `vx.x.x`
-1. Hold until approved and merged
+2. Open the PR with title `vx.x.x`
+3. Hold until approved and merged
 
 ### Cut the release
 

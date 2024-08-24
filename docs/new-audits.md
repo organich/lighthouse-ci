@@ -16,8 +16,8 @@ Lighthouse audits that surface in the report should:
 ## Actionability
 
 1. Specific advice should be given if the audit fails. If an audit can fail in multiple ways, each way should have  specific guidance that the user should take to resolve the problem.
-1. If the failure can be applied to a specific resource, use the appropriate detail type (see subsection).
-1. If multiple failures can occur on a single page, show each (use a table - don't just return a binary score).
+2. If the failure can be applied to a specific resource, use the appropriate detail type (see subsection).
+3. If multiple failures can occur on a single page, show each (use a table - don't just return a binary score).
 
 ### Detail Types
 
@@ -96,7 +96,7 @@ Standard Audit `failureTitle`: "Page does not work offline"
 ## Process for creating a new audit
 
 1. Scan the criteria we’ve laid out above. If you think the principles match with your proposed new audit, then proceed!
-1. Next step is to create an issue on GitHub with answers to the following questions:
+2. Next step is to create an issue on GitHub with answers to the following questions:
 ```
 #### Provide a basic description of the audit
 #### How would the audit appear in the report?

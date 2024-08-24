@@ -44,10 +44,10 @@ Finally, publish to NPM.
 
 1. Install `lighthouse` (v5+) and the plugin `lighthouse-plugin-example`, likely as `devDependencies`.
    * `npm install -D lighthouse lighthouse-plugin-example`
-1. To run your private lighthouse binary, you have three options
+2. To run your private lighthouse binary, you have three options
    1. `npx --no-install lighthouse -- https://example.com --plugins=lighthouse-plugin-example --view`
-   1. `yarn lighthouse https://example.com --plugins=lighthouse-plugin-example --view`
-   1. Add an npm script calling `lighthouse` and run that.
+   2. `yarn lighthouse https://example.com --plugins=lighthouse-plugin-example --view`
+   3. Add an npm script calling `lighthouse` and run that.
 
 
 ## Result

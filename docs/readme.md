@@ -96,8 +96,8 @@ When installed globally via `npm i -g lighthouse` or `yarn global add lighthouse
 instance with an open debugging port.
 
 1. Run `chrome-debug`. This will log the debugging port of your Chrome instance
-1. Navigate to your site and log in.
-1. In a separate terminal tab, run `lighthouse http://mysite.com --port port-number` using the port number from chrome-debug.
+2. Navigate to your site and log in.
+3. In a separate terminal tab, run `lighthouse http://mysite.com --port port-number` using the port number from chrome-debug.
 
 ## Testing on a site with an untrusted certificate
 

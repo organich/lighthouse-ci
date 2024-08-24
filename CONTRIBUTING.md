@@ -19,11 +19,11 @@ See [Lighthouse Architecture](./docs/architecture.md), our overview and tour of 
 If you have a contribution for our [documentation](https://developer.chrome.com/docs/lighthouse/), please submit it in the [developer.chrome.com repo](https://github.com/GoogleChrome/developer.chrome.com).
 
 1. Submit an issue describing your proposed change.
-1. The maintainers will respond to your issue promptly.
-1. If your proposed change is accepted, and you haven't already done so, sign a Contributor License Agreement (see details below).
-1. Fork the repo, develop and test your code changes.
-1. Ensure that your code adheres to the existing style in the sample to which you are contributing.
-1. Submit a pull request.
+2. The maintainers will respond to your issue promptly.
+3. If your proposed change is accepted, and you haven't already done so, sign a Contributor License Agreement (see details below).
+4. Fork the repo, develop and test your code changes.
+5. Ensure that your code adheres to the existing style in the sample to which you are contributing.
+6. Submit a pull request.
 
 ## Audit PRs
 
@@ -33,11 +33,11 @@ A PR for a new audit or changing an existing audit almost always needs the follo
 
 1. If new, add the audit to the [default config file](core/config/default-config.js) (or, rarely, one of the other config files) so Lighthouse will run it.
 
-1. **Unit tests**: in the matching test file (e.g. tests for `core/audits/my-swell-audit.js` go in `core/test/audits/my-swell-audit-test.js`).
+2. **Unit tests**: in the matching test file (e.g. tests for `core/audits/my-swell-audit.js` go in `core/test/audits/my-swell-audit-test.js`).
 
-1. **Smoke (end-to-end) tests**: search through the [existing test expectations](cli/test/smokehouse/test-definitions/) to see if there's a logical place to add a check for your change, or (as a last resort) add a new smoke test.
+3. **Smoke (end-to-end) tests**: search through the [existing test expectations](cli/test/smokehouse/test-definitions/) to see if there's a logical place to add a check for your change, or (as a last resort) add a new smoke test.
 
-1. Run `yarn update:sample-json` to update the [sample Lighthouse result JSON](core/test/results/sample_v2.json) kept in the repo for testing. This will also pull any strings needed for localization into the correct files.
+4. Run `yarn update:sample-json` to update the [sample Lighthouse result JSON](core/test/results/sample_v2.json) kept in the repo for testing. This will also pull any strings needed for localization into the correct files.
 
 ### Audit `description` Guidelines
 
@@ -68,15 +68,15 @@ A PR adding or changing a gatherer almost always needs to include the following:
 
 1. If new, add the gatherer to the [default config file](core/config/default-config.js) (or, rarely, one of the other config files) so Lighthouse will run it.
 
-1. **Unit tests**: gatherer execution often takes place mostly on the browser side, either through protocol functionality or executing javascript in the test page. This makes gatherers difficult to unit test without extensive mocking, ending up mostly exercising the mocks instead of the actual gatherer.
+2. **Unit tests**: gatherer execution often takes place mostly on the browser side, either through protocol functionality or executing javascript in the test page. This makes gatherers difficult to unit test without extensive mocking, ending up mostly exercising the mocks instead of the actual gatherer.
 
    As a result, we mostly rely on smoke testing for gatherers. However, if there are parts of a gatherer that naturally lend themselves to unit testing, the new tests would go in the matching test file (e.g. tests for `core/gather/gatherers/reap.js` go in `core/test/gather/gatherers/reap-test.js`).
 
-1. **Smoke (end-to-end) tests**: search through the [existing test expectations](cli/test/smokehouse/test-definitions/) to see if there's a logical place to add a check for your change, or (as a last resort) add a new smoke test if one is required.
+3. **Smoke (end-to-end) tests**: search through the [existing test expectations](cli/test/smokehouse/test-definitions/) to see if there's a logical place to add a check for your change, or (as a last resort) add a new smoke test if one is required.
 
    It's most important to get true end-to-end coverage, so be sure that audits that consume the new gatherer output are in the expectations. Artifacts can also have expectations for those intermediate results.
 
-1. **Golden artifacts**: `sample_v2.json` is generated from a set of artifacts that come from running LH against `dbw_tester.html`. Those artifacts likely need to be updated after gatherer changes with `yarn update:sample-artifacts`, but limit to just the artifact being altered if possible. For example:
+4. **Golden artifacts**: `sample_v2.json` is generated from a set of artifacts that come from running LH against `dbw_tester.html`. Those artifacts likely need to be updated after gatherer changes with `yarn update:sample-artifacts`, but limit to just the artifact being altered if possible. For example:
 
    ```sh
    # update just the Scripts artifact
@@ -85,7 +85,7 @@ A PR adding or changing a gatherer almost always needs to include the following:
 
    This command works for updating `yarn update:sample-artifacts DevtoolsLog` or `Trace` as well, but the resulting `sample_v2.json` churn may be extensive and you might be better off editing manually.
 
-1. Run `yarn update:sample-json` to update the [sample Lighthouse result JSON](core/test/results/sample_v2.json) kept in the repo for testing. This will also pull any strings needed for localization into the correct files.
+5. Run `yarn update:sample-json` to update the [sample Lighthouse result JSON](core/test/results/sample_v2.json) kept in the repo for testing. This will also pull any strings needed for localization into the correct files.
 
 ## Protobuf errors
 
@@ -96,8 +96,8 @@ If there is an error in one of the proto tests (`proto-test.js` or `psi-test.js`
 If you are adding an image to a readme use the absolute path to the image for the specific commit hash where the image was introduced.  This requires multiple commits.
 
 1. Make the commit to introduce the image.
-1. Get the [absolute path](https://help.github.com/articles/getting-permanent-links-to-files/) to the image with the commit hash e.g. `https://raw.githubusercontent.com/GoogleChrome/lighthouse/e7997b3db01de3553d8cb208a40f3d4fd350195c/assets/example_dev_tools.png`
-1. Add to readme as an absolute reference to that image.
+2. Get the [absolute path](https://help.github.com/articles/getting-permanent-links-to-files/) to the image with the commit hash e.g. `https://raw.githubusercontent.com/GoogleChrome/lighthouse/e7997b3db01de3553d8cb208a40f3d4fd350195c/assets/example_dev_tools.png`
+3. Add to readme as an absolute reference to that image.
 
 If you are updating an image that already exists: commit it, then update the readme to point the image with that new commits hash absolute url.
 

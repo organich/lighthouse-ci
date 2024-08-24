@@ -4,16 +4,16 @@
 
 1. [Introduction](#introduction)
    1. [What is a Lighthouse Plugin?](#what-is-a-lighthouse-plugin)
-   1. [Comparing a Plugin vs. Custom Config](#comparing-a-plugin-vs-custom-config)
-   1. [Getting Started](#getting-started)
-1. [API](#api)
+   2. [Comparing a Plugin vs. Custom Config](#comparing-a-plugin-vs-custom-config)
+   3. [Getting Started](#getting-started)
+2. [API](#api)
    1. [Plugin Config](#plugin-config)
-   1. [Plugin Audits](#plugin-audits)
-1. [Best Practices](#best-practices)
+   2. [Plugin Audits](#plugin-audits)
+3. [Best Practices](#best-practices)
    1. [Naming](#naming)
-   1. [Scoring](#scoring)
-   1. [Common Mistakes](#common-mistakes)
-1. [Examples](#examples)
+   2. [Scoring](#scoring)
+   3. [Common Mistakes](#common-mistakes)
+4. [Examples](#examples)
 
 ## Introduction
 
@@ -44,8 +44,8 @@ Plugins are easily shared and have a stable API that won't change between minor 
 To develop a Lighthouse plugin, you'll need to write three things:
 
 1. A `package.json` file to define your plugin's dependencies and point to your `plugin.js` file.
-1. A `plugin.js` file to declare your plugin's audits, category name, and scoring.
-1. Custom audit files that will contain the primary logic of the checks you want to perform.
+2. A `plugin.js` file to declare your plugin's audits, category name, and scoring.
+3. Custom audit files that will contain the primary logic of the checks you want to perform.
 
 To see a fully functioning example, see our [plugin recipe](./recipes/lighthouse-plugin-example/readme.md) or its [GitHub repository template](https://github.com/GoogleChrome/lighthouse-plugin-example).
 
@@ -337,8 +337,8 @@ Write audit descriptions that provide brief context for why the audit is importa
 ### Scoring
 
 1. Weight each audit by its importance.
-1. Differentiate scores within an audit by returning a number _between_ `0` and `1`. Scores greater than `0.9` will be hidden in "Passed Audits" section by default.
-1. Avoid inflating scores unnecessarily by marking audits as not applicable. When an audit's advice doesn't apply, simply `return {score: null, notApplicable: true}`.
+2. Differentiate scores within an audit by returning a number _between_ `0` and `1`. Scores greater than `0.9` will be hidden in "Passed Audits" section by default.
+3. Avoid inflating scores unnecessarily by marking audits as not applicable. When an audit's advice doesn't apply, simply `return {score: null, notApplicable: true}`.
 
 ### Common Mistakes
 

@@ -38,9 +38,9 @@ What does this do?  Read on....
 Puppeteer - a browser automation tool - can be used to programmatically setup a session.
 
 1. Launch a new browser.
-1. Navigate to the login page.
-1. Fill and submit the login form.
-1. Run Lighthouse using the same browser.
+2. Navigate to the login page.
+3. Fill and submit the login form.
+4. Run Lighthouse using the same browser.
 
 First, launch Chrome and create a new page:
 ```js
