@@ -155,6 +155,9 @@ declare global {
         projectSlug: string;
         label?: string;
         branch?: string;
+        maxNumberOfParallelUrls?: number;
+        categories?: Array<'performance' | 'accessibility' | 'best-practices' | 'seo'>;
+        strategy?: 'desktop' | 'mobile';
       }
 
       export interface StorageOptions {
@@ -181,7 +184,9 @@ declare global {
       export interface Options {
         logLevel: 'silent' | 'verbose';
         port: number;
-        host?: string
+        host?: string;
+
+        useBodyParser?: boolean;
         storage: StorageOptions;
         psiCollectCron?: {
           psiApiKey: string;
@@ -192,6 +197,9 @@ declare global {
         basicAuth?: {
           username?: string;
           password?: string;
+        };
+        viewer?: {
+          origin?: string;
         };
       }
 

@@ -10,6 +10,8 @@ Lighthouse CI will automatically look for a configuration file in the current wo
 
 1. `.lighthouserc.js`
 1. `lighthouserc.js`
+1. `.lighthouserc.cjs`
+1. `lighthouserc.cjs`
 1. `.lighthouserc.json`
 1. `lighthouserc.json`
 1. `.lighthouserc.yml`
@@ -230,6 +232,9 @@ Options:
   --maxAutodiscoverUrls      The maximum number of pages to collect when using the staticDistDir
                              option with no specified URL. Disable this limit by setting to 0.
                                                                                [number] [default: 5]
+  --staticDirFileDiscoveryDepth The maximum depth of nested folders Lighthouse will look into to discover 
+                                URLs on a static file folder.
+                                                                               [number] [default: 2]
 ```
 
 #### `method`
@@ -326,7 +331,7 @@ For more information on how to use puppeteer, read up on [their API docs](https:
 
 #### `puppeteerLaunchOptions`
 
-An object of options to pass to puppeteer's [`launch` method](https://github.com/puppeteer/puppeteer/blob/v2.0.0/docs/api.md#puppeteerlaunchoptions). Only used when `puppeterScript` is set.
+An object of options to pass to puppeteer's [`launch` method](https://github.com/puppeteer/puppeteer/blob/v2.0.0/docs/api.md#puppeteerlaunchoptions). Only used when `puppeteerScript` is set.
 
 #### `psiApiKey`
 
@@ -420,11 +425,30 @@ lhci collect --url=https://example-1.com --url=https://example-2.com
 lhci collect --start-server-command="yarn serve" --url=http://localhost:8080/ --puppeteer-script=./path/to/login-with-puppeteer.js
 ```
 
+### `staticDirFileDiscoveryDepth`
+
+The maximum depth level of nested folders that Lighthouse will look into to discover URLs. If not set, this will default to 2.
+
+### Example
+```text
+
+public/
+├── index.html               #level 0                      
+├── contact/
+│   └── index.html           #level 1
+├── projects/
+│   ├──index.html            #level 1
+│   └── crisis/
+│       ├──index.html        #level 2
+│       └── earthquake/
+│           └── index.html   #level 3
+```
+
 ---
 
 ### `upload`
 
-Saves the runs in the `.lighthouseci/` folder to desired target and sets a GitHub status check when the GitHub token is available.
+Saves the runs in the `.lighthouseci/` folder to desired target and sets a GitHub status check when the GitHub token is available and target is not `filesystem`.
 
 ```bash
 Options:
@@ -484,6 +508,7 @@ The target location to which Lighthouse CI should upload the reports.
 - You want to process the raw Lighthouse results yourself locally.
 - You want access to the report files on the local filesystem.
 - You don't want to upload the results to a custom location that isn't supported by Lighthouse CI.
+- You don't need detailed status checks in GitHub
 
 #### `token`
 
@@ -527,7 +552,7 @@ A map of additional headers to add the requests made to the LHCI server. Useful 
 
 _target=lhci only_
 
-An object containing a username and password pair for authenicating with a Basic auth protected LHCI server. Use this setting when you've protected your LHCI server with Basic auth.
+An object containing a username and password pair for authenticating with a Basic auth protected LHCI server. Use this setting when you've protected your LHCI server with Basic auth.
 
 **Example:**
 
@@ -999,6 +1024,18 @@ _Optional_ The human friendly label for this set of URLs to use when logging sta
 ##### `psiCollectCron.sites[i].branch`
 
 _Optional_ The "branch" on which to report the results. Defaults to the base branch of the project referenced by `projectSlug`.
+
+##### `psiCollectCron.sites[i].maxNumberOfParallelUrls`
+
+_Optional_ The maximum number of requests to send to the PageSpeed Insights API concurrently. Defaults to `Infinity` (all urls sent in parallel).
+
+##### `psiCollectCron.sites[i].categories`
+
+_Optional_ An array containing the categories to test for each url in this site. Defaults to `['performance', 'accessibility', 'best-practices', 'seo']` (all categories).
+
+##### `psiCollectCron.sites[i].strategy`
+
+_Optional_ The strategy that the PageSpeed Insights API should use when testing each url in this site. Can be either `desktop` or `mobile`. Defaults to `mobile`.
 
 #### `deleteOldBuildsCron`
 

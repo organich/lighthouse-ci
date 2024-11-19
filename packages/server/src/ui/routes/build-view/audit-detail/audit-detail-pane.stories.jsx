@@ -20,13 +20,22 @@ import lhr700A_ from '../../../../../test/fixtures/lh-7-0-0-coursehero-a.json';
 import lhr700B_ from '../../../../../test/fixtures/lh-7-0-0-coursehero-b.json';
 import lhr800A_ from '../../../../../test/fixtures/lh-8-0-0-coursehero-a.json';
 import lhr800B_ from '../../../../../test/fixtures/lh-8-0-0-coursehero-b.json';
+import lhr930A_ from '../../../../../test/fixtures/lh-9-3-0-coursehero-a.json';
+import lhr930B_ from '../../../../../test/fixtures/lh-9-3-0-coursehero-b.json';
+import lhr1010A_ from '../../../../../test/fixtures/lh-10-1-0-coursehero-a.json';
+import lhr1010B_ from '../../../../../test/fixtures/lh-10-1-0-coursehero-b.json';
+import lhr1140A_ from '../../../../../test/fixtures/lh-11-4-0-coursehero-a.json';
+import lhr1140B_ from '../../../../../test/fixtures/lh-11-4-0-coursehero-b.json';
+import lhr1200A_ from '../../../../../test/fixtures/lh-12-0-0-coursehero-a.json';
+import lhr1200B_ from '../../../../../test/fixtures/lh-12-0-0-coursehero-b.json';
 import lhrSubitemsA_ from '../../../../../test/fixtures/lh-subitems-a.json';
 import lhrSubitemsB_ from '../../../../../test/fixtures/lh-subitems-b.json';
+import lhrPsi800A_ from '../../../../../test/fixtures/psi-8-0-0-dkdev-a.json';
+import lhrPsi800B_ from '../../../../../test/fixtures/psi-8-0-0-dkdev-b.json';
 
 export default {
   title: 'Build View/Audit Detail Pane',
   component: AuditDetailPane,
-  parameters: {dimensions: 'auto'},
 };
 
 const lhr5A = /** @type {any} */ (lhr5A_);
@@ -41,8 +50,18 @@ const lhr700A = /** @type {any} */ (lhr700A_);
 const lhr700B = /** @type {any} */ (lhr700B_);
 const lhr800A = /** @type {any} */ (lhr800A_);
 const lhr800B = /** @type {any} */ (lhr800B_);
+const lhr930A = /** @type {any} */ (lhr930A_);
+const lhr930B = /** @type {any} */ (lhr930B_);
+const lhr1010A = /** @type {any} */ (lhr1010A_);
+const lhr1010B = /** @type {any} */ (lhr1010B_);
+const lhr1140A = /** @type {any} */ (lhr1140A_);
+const lhr1140B = /** @type {any} */ (lhr1140B_);
+const lhr1200A = /** @type {any} */ (lhr1200A_);
+const lhr1200B = /** @type {any} */ (lhr1200B_);
 const lhrSubitemsA = /** @type {any} */ (lhrSubitemsA_);
 const lhrSubitemsB = /** @type {any} */ (lhrSubitemsB_);
+const lhrPsi800A = /** @type {any} */ (lhrPsi800A_);
+const lhrPsi800B = /** @type {any} */ (lhrPsi800B_);
 
 const auditPairs5 = createAuditPairs(lhr5A, lhr5B);
 const auditPairs6 = createAuditPairs(lhr6A, lhr6B);
@@ -50,6 +69,11 @@ const auditPairs62 = createAuditPairs(lhr62A, lhr62B);
 const auditPairs641 = createAuditPairs(lhr641A, lhr641B);
 const auditPairs700 = createAuditPairs(lhr700A, lhr700B);
 const auditPairs800 = createAuditPairs(lhr800A, lhr800B);
+const auditPairs930 = createAuditPairs(lhr930A, lhr930B);
+const auditPairs1010 = createAuditPairs(lhr1010A, lhr1010B);
+const auditPairs1140 = createAuditPairs(lhr1140A, lhr1140B);
+const auditPairs1200 = createAuditPairs(lhr1200A, lhr1200B);
+const auditPairsPsi800 = createAuditPairs(lhrPsi800A, lhrPsi800B);
 const auditPairsSubitems = createAuditPairs(lhrSubitemsA, lhrSubitemsB, {
   filter: pair =>
     [
@@ -115,6 +139,51 @@ export const Version800 = () => (
   />
 );
 
+export const Version930 = () => (
+  <AuditDetailPane
+    selectedAuditId={auditPairs930[1].audit.id || ''}
+    setSelectedAuditId={action('setSelectedAuditId')}
+    pairs={auditPairs930}
+    baseLhr={lhr930B}
+  />
+);
+
+export const Version1010 = () => (
+  <AuditDetailPane
+    selectedAuditId={auditPairs1010[1].audit.id || ''}
+    setSelectedAuditId={action('setSelectedAuditId')}
+    pairs={auditPairs1010}
+    baseLhr={lhr1010B}
+  />
+);
+
+export const Version1140 = () => (
+  <AuditDetailPane
+    selectedAuditId={auditPairs1140[1].audit.id || ''}
+    setSelectedAuditId={action('setSelectedAuditId')}
+    pairs={auditPairs1140}
+    baseLhr={lhr1140B}
+  />
+);
+
+export const Version1200 = () => (
+  <AuditDetailPane
+    selectedAuditId={auditPairs1200[1].audit.id || ''}
+    setSelectedAuditId={action('setSelectedAuditId')}
+    pairs={auditPairs1200}
+    baseLhr={lhr1200B}
+  />
+);
+
+export const VersionPsi800 = () => (
+  <AuditDetailPane
+    selectedAuditId={auditPairsPsi800[1].audit.id || ''}
+    setSelectedAuditId={action('setSelectedAuditId')}
+    pairs={auditPairsPsi800}
+    baseLhr={lhrPsi800B}
+  />
+);
+
 export const VersionSubitems = () => (
   <AuditDetailPane
     selectedAuditId={auditPairsSubitems[1].audit.id || ''}
@@ -123,6 +192,26 @@ export const VersionSubitems = () => (
     baseLhr={lhrSubitemsA}
   />
 );
+
+/** @param {LHCI.AuditPair} pair */
+function forceDeterministicResults(pair) {
+  /** @param {Record<string, any>} item */
+  function forceBrokenImage(item) {
+    if (item.url) item.url = item.url.replace(/https?:\/\/(.*?)\//, 'chrome://$1/');
+  }
+
+  /** @param {LH.AuditResult} audit */
+  function forceAudit(audit) {
+    if (audit.details) {
+      const headings = JSON.stringify(audit.details.headings) || '';
+      const hasThumbnailItem = headings.includes('thumbnail');
+      if (hasThumbnailItem && audit.details.items) audit.details.items.forEach(forceBrokenImage);
+    }
+  }
+
+  forceAudit(pair.audit);
+  if (pair.baseAudit) forceAudit(pair.baseAudit);
+}
 
 /**
  * @param {LH.Result} lhrA
@@ -137,6 +226,8 @@ function createAuditPairs(lhrA, lhrB, options) {
     .map(group => group.pairs)
     .reduce((a, b) => a.concat(b))
     .filter((pair, i) => {
+      forceDeterministicResults(pair);
+
       if (filter) return filter(pair, i);
       // A superlong set of details that breaks diff comparisons, always discard.
       if (pair.audit.id === 'uses-long-cache-ttl') return false;

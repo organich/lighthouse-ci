@@ -32,6 +32,10 @@ function buildCommand(yargs) {
       type: 'boolean',
       description: 'Whether to include the results of passed assertions in the output.',
     },
+    lhr: {
+      description:
+        'Path to LHRs (either a folder or a single file path). Not recursive. If not provided, .lighthouseci is used',
+    },
   });
 }
 
@@ -51,9 +55,9 @@ async function runCommand(options) {
   if (!areAssertionsSet && !budgetsFile) throw new Error('No assertions to use');
   if (budgetsFile && areAssertionsSet) throw new Error('Cannot use both budgets AND assertions');
   // If we have a budgets file, convert it to our assertions format.
-  if (budgetsFile) options = convertBudgetsToAssertions(readBudgets(budgetsFile));
+  if (budgetsFile) options = await convertBudgetsToAssertions(readBudgets(budgetsFile));
 
-  const lhrs = loadSavedLHRs().map(json => JSON.parse(json));
+  const lhrs = loadSavedLHRs(options.lhr).map(json => JSON.parse(json));
   const uniqueUrls = new Set(lhrs.map(lhr => lhr.finalUrl));
   const allResults = getAllAssertionResults(options, lhrs);
   const groupedResults = _.groupBy(allResults, result => result.url);

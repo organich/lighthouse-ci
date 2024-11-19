@@ -4,7 +4,7 @@
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
-import {h} from 'preact';
+import {Fragment, h} from 'preact';
 import {Nbsp} from '../../../components/nbsp';
 import './simple-details.css';
 import {getDiffLabel, getDeltaStats} from '@lhci/utils/src/audit-diff-finder.js';
@@ -63,7 +63,7 @@ export const SimpleDetails = props => {
       return (
         <img
           style={{width: 48, height: 48, objectFit: 'cover'}}
-          src={'asdfasjdfoiasjdfosdj'}
+          src={value}
           onError={evt => {
             const img = evt.srcElement;
             if (!(img instanceof HTMLImageElement)) return;
@@ -123,6 +123,9 @@ export const SimpleDetails = props => {
           {url}:{line}:{column}
         </pre>
       );
+    }
+    case 'debugdata': {
+      return <Fragment />;
     }
     default: {
       const debugdata = JSON.stringify(props);

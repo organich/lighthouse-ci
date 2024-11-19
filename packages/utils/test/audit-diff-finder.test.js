@@ -17,7 +17,7 @@ const {
   synthesizeItemKeyDiffs,
   sortZippedBaseAndCompareItems,
   replaceNondeterministicStrings,
-} = require('@lhci/utils/src/audit-diff-finder.js');
+} = require('../src/audit-diff-finder.js');
 
 describe('#findAuditDiffs', () => {
   it('should return empty array for identical audits', () => {
@@ -381,6 +381,34 @@ describe('#findAuditDiffs', () => {
     expect(findAuditDiffs(baseAudit, compareAudit)).toEqual([]);
   });
 
+  it('should handle preact mutations', () => {
+    // Create a circular data structure that would fail serialization.
+    const circular = {x: {}};
+    circular.x = circular;
+
+    // Ensure the two audits are otherwise identical, so serialization is triggered.
+    const baseAudit = {
+      id: 'audit',
+      score: 0.5,
+      details: {
+        headings: [{key: null, subItemsHeading: {key: 'label'}}, {key: 'timeSpent'}],
+        items: [{timeSpent: 1000, subItems: [{label: 'Label 1', _circular: circular}]}],
+      },
+    };
+
+    const compareAudit = {
+      id: 'audit',
+      score: 0.5,
+      details: {
+        headings: [{key: null, subItemsHeading: {key: 'label'}}, {key: 'timeSpent'}],
+        items: [{timeSpent: 1000, subItems: [{label: 'Label 1'}], _circular: circular}],
+      },
+    };
+
+    // Assert that everything passes.
+    expect(findAuditDiffs(baseAudit, compareAudit)).toEqual([]);
+  });
+
   it('should find a details item addition/removal diff', () => {
     const baseAudit = {
       id: 'audit',
@@ -407,6 +435,22 @@ describe('#findAuditDiffs', () => {
       },
     ]);
   });
+
+  it('should not find a details item addition/removal diff for debugdata', () => {
+    const baseAudit = {
+      id: 'audit',
+      score: 0.5,
+      details: {type: 'debugdata', items: [{url: 'http://example.com/foo.js'}]},
+    };
+
+    const compareAudit = {
+      id: 'audit',
+      score: 0.5,
+      details: {type: 'debugdata', items: [{url: 'http://example.com/foo2.js'}]},
+    };
+
+    expect(findAuditDiffs(baseAudit, compareAudit)).toEqual([]);
+  });
 });
 
 describe('#getDiffSeverity', () => {
@@ -417,7 +461,10 @@ describe('#getDiffSeverity', () => {
       numericValue: 1000,
       details: {
         headings: [{key: 'wastedMs'}, {key: 'wastedKb'}],
-        items: [{url: 'urlA', wastedMs: 2000}, {url: 'urlB', wastedKb: 2000e3}],
+        items: [
+          {url: 'urlA', wastedMs: 2000},
+          {url: 'urlB', wastedKb: 2000e3},
+        ],
       },
     };
 
@@ -427,7 +474,10 @@ describe('#getDiffSeverity', () => {
       numericValue: 1100,
       details: {
         headings: [{key: 'wastedMs'}, {key: 'wastedKb'}],
-        items: [{url: 'urlA', wastedMs: 2500}, {url: 'urlD', wastedKb: 70e3}],
+        items: [
+          {url: 'urlA', wastedMs: 2500},
+          {url: 'urlD', wastedKb: 70e3},
+        ],
       },
     };
 
@@ -437,7 +487,10 @@ describe('#getDiffSeverity', () => {
       numericValue: 400,
       details: {
         headings: [{key: 'wastedMs'}, {key: 'wastedKb'}],
-        items: [{url: 'urlA', wastedMs: 1200}, {url: 'urlB', wastedKb: 1800e3}],
+        items: [
+          {url: 'urlA', wastedMs: 1200},
+          {url: 'urlB', wastedKb: 1800e3},
+        ],
       },
     };
 

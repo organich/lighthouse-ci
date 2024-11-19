@@ -13,19 +13,13 @@ import * as d3 from 'd3';
  * @param {{top: number, right: number, bottom: number, left: number}} margin
  */
 export function createRootSvg(rootEl, margin) {
-  d3.select(rootEl)
-    .selectAll('*')
-    .remove();
+  d3.select(rootEl).selectAll('*').remove();
 
   const height = rootEl.clientHeight;
   const width = rootEl.clientWidth;
   const graphWidth = width - margin.left - margin.right;
   const graphHeight = height - margin.top - margin.bottom;
-  const svgRoot = d3
-    .select(rootEl)
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height);
+  const svgRoot = d3.select(rootEl).append('svg').attr('width', width).attr('height', height);
 
   return {
     width,
@@ -65,7 +59,7 @@ export function findRootSvg(rootEl, margin) {
  * @param {{className?: string, data: T, render: (el: HTMLElement, data: T) => void, computeRerenderKey: (data: T) => string, update?: (el: HTMLElement, data: T) => void, computeUpdateKey?: (data: T) => string}} props
  */
 export const D3Graph = props => {
-  const graphElRef = useRef(/** @type {HTMLElement|undefined} */ (undefined));
+  const graphElRef = useRef(/** @type {HTMLDivElement|null} */ (null));
   const updateKey = props.computeUpdateKey ? props.computeUpdateKey(props.data) : '';
   const rerender = () => {
     if (!graphElRef.current) return;

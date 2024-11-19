@@ -10,7 +10,18 @@
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
+const net = require('net');
 const {runCLI, withTmpDir, cleanStdOutput} = require('./test-utils.js');
+
+async function getPortFree() {
+  return new Promise(res => {
+    const srv = net.createServer();
+    srv.listen(0, () => {
+      const port = srv.address().port;
+      srv.close(() => res(port));
+    });
+  });
+}
 
 describe('collect', () => {
   const fixturesDir = path.join(__dirname, 'fixtures');
@@ -68,7 +79,8 @@ describe('collect', () => {
         if (os.platform() === 'win32') return;
 
         const serverPath = path.join(fixturesDir, 'autorun-start-server/autorun-server.js');
-        const startCommand = `SERVER_START_PORT=52427 SERVER_START_MESSAGE='Running server' node ${serverPath}`;
+        const port = await getPortFree();
+        const startCommand = `SERVER_START_PORT=${port} SERVER_START_MESSAGE='Running server' node ${serverPath}`;
         const {stdout, stderr, status} = await runCLI(
           [
             'collect',
@@ -76,7 +88,7 @@ describe('collect', () => {
             `--config=${rcFile}`,
             `--start-server-command=${startCommand}`,
             '--start-server-ready-pattern=running',
-            '--url=http://localhost:52427/',
+            `--url=http://localhost:${port}/`,
           ],
           {
             // Run in temp dir to avoid conflicts with other tests
@@ -88,12 +100,12 @@ describe('collect', () => {
         // Check server started and lighthouse ran.
         const cleanStartCommand = cleanStdOutput(startCommand);
         expect(stdout).toMatchInlineSnapshot(`
-        "Started a web server with \\"${cleanStartCommand}\\"...
-        Running Lighthouse 1 time(s) on http://localhost:XXXX/
-        Run #1...done.
-        Done running Lighthouse!
-        "
-      `);
+          "Started a web server with "${cleanStartCommand}"...
+          Running Lighthouse 1 time(s) on http://localhost:XXXX/
+          Run #1...done.
+          Done running Lighthouse!
+          "
+        `);
         // Checkout no errors were logged.
         expect(stderr.toString()).toMatchInlineSnapshot(`""`);
         // Check script ran without errors.
@@ -129,14 +141,14 @@ describe('collect', () => {
         // Check server started and lighthouse ran.
         const cleanStartCommand = cleanStdOutput(startCommand);
         expect(stdout).toMatchInlineSnapshot(`
-        "Started a web server with \\"${cleanStartCommand}\\"...
-        WARNING: Timed out waiting for the server to start listening.
-                 Ensure the server prints a pattern that matches /listen|ready/i when it is ready.
-        Running Lighthouse 1 time(s) on http://localhost:XXXX/
-        Run #1...done.
-        Done running Lighthouse!
-        "
-      `);
+          "Started a web server with "${cleanStartCommand}"...
+          WARNING: Timed out waiting for the server to start listening.
+                   Ensure the server prints a pattern that matches /listen|ready/i when it is ready.
+          Running Lighthouse 1 time(s) on http://localhost:XXXX/
+          Run #1...done.
+          Done running Lighthouse!
+          "
+        `);
         // Check script ran without errors.
         expect(status).toEqual(0);
       }),

@@ -6,7 +6,6 @@
 'use strict';
 
 const log = require('debug')('lhci:utils:api-client');
-const URL = require('url').URL;
 const fetch = require('isomorphic-fetch');
 
 /** @type {(s: string) => string} */
@@ -14,7 +13,7 @@ const btoa = typeof window === 'undefined' ? s => Buffer.from(s).toString('base6
 
 class ApiClient {
   /**
-   * @param {{rootURL: string, fetch?: import('isomorphic-fetch'), URL?: typeof import('url').URL, extraHeaders?: Record<string, string>, basicAuth?: LHCI.ServerCommand.Options['basicAuth']}} options
+   * @param {{rootURL: string, fetch?: import('isomorphic-fetch'), URL?: typeof URL, extraHeaders?: Record<string, string>, basicAuth?: LHCI.ServerCommand.Options['basicAuth']}} options
    */
   constructor(options) {
     this._rootURL = options.rootURL;
@@ -166,7 +165,18 @@ class ApiClient {
     const response = await this._fetch(this._normalizeURL('/version').href, {
       headers: {...this._extraHeaders},
     });
-    return response.text();
+
+    const body = response.text();
+
+    if (!response.ok) {
+      /** @type {Error & {status?: number, body?: any}} */
+      const error = new Error(`Unexpected status code ${response.status}\n  ${body}`);
+      error.status = response.status;
+      error.body = body;
+      throw error;
+    }
+
+    return body;
   }
 
   /**
@@ -331,6 +341,13 @@ class ApiClient {
    */
   async getStatistics(projectId, buildId) {
     return this._get(`/v1/projects/${projectId}/builds/${buildId}/statistics`);
+  }
+
+  /**
+   * @return {Promise<string>}
+   */
+  async getViewerOrigin() {
+    return this._get('/v1/viewer/origin');
   }
 
   /**

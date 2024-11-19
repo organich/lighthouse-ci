@@ -33,6 +33,7 @@ class PuppeteerManager {
 
     try {
       // @ts-ignore - puppeteer-core is API-compatible with puppeteer
+      // eslint-disable-next-line import/no-extraneous-dependencies
       return require('puppeteer-core');
     } catch (_) {}
 
@@ -57,14 +58,19 @@ class PuppeteerManager {
       throw new Error(`Unable to require 'puppeteer' for script, have you run 'npm i puppeteer'?`);
     }
 
-    this._browser = await puppeteer.launch({
+    /** @type {import('puppeteer').PuppeteerLaunchOptions} */
+    const args = {
       ...(this._options.puppeteerLaunchOptions || {}),
+      headless: 'new',
       pipe: false,
       devtools: false,
-      headless: !this._options.headful,
       // The default value for `chromePath` is determined by yargs using the `getChromiumPath` method.
       executablePath: this._options.chromePath,
-    });
+    };
+    if (this._options.headful === true) {
+      args.headless = false;
+    }
+    this._browser = await puppeteer.launch(args);
 
     return this._browser;
   }
@@ -84,7 +90,11 @@ class PuppeteerManager {
 
     // Otherwise, check to see if the expected puppeteer download exists.
     const puppeteer = PuppeteerManager._requirePuppeteer();
-    const chromiumPath = puppeteer && puppeteer.executablePath();
+    const puppeteerUnknown = /** @type {unknown} */ (puppeteer);
+    const pupppeteerNode = /** @type {import('puppeteer').PuppeteerNode | undefined} */ (
+      puppeteerUnknown
+    );
+    const chromiumPath = pupppeteerNode && pupppeteerNode.executablePath();
     return chromiumPath && fs.existsSync(chromiumPath) ? chromiumPath : undefined;
   }
 

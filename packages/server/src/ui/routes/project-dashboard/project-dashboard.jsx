@@ -45,7 +45,10 @@ const computeBranchSelection = props => {
 const computeUrlSelection = props => {
   const availableUrls = props.urls.length ? props.urls : [{url: 'None'}];
   // Default to the shortest URL because that's usually the root homepage, e.g. `/`
-  const shortestUrl = _.minBy(availableUrls.map(({url}) => url), url => url.length);
+  const shortestUrl = _.minBy(
+    availableUrls.map(({url}) => url),
+    url => url.length
+  );
   const selectedUrl = props.runUrl || shortestUrl || 'None';
 
   return {
@@ -100,7 +103,7 @@ const UrlAndBranchSelector = props => {
           to.searchParams.set('runUrl', url);
           route(`${to.pathname}${to.search}`);
         }}
-        options={props.availableUrls.map(({url}) => ({value: url, label: url}))}
+        options={props.availableUrls.map(({url}) => ({value: url, label: decodeURI(url)}))}
       />
       <Dropdown
         label="Branch"

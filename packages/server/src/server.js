@@ -16,6 +16,7 @@ const compression = require('compression');
 const bodyParser = require('body-parser');
 const ApiClient = require('@lhci/utils/src/api-client.js');
 const createProjectsRouter = require('./api/routes/projects.js');
+const createViewerRouter = require('./api/routes/viewer.js');
 const StorageMethod = require('./api/storage/storage-method.js');
 const {errorMiddleware, createBasicAuthMiddleware} = require('./api/express-utils.js');
 const {startPsiCollectCron} = require('./cron/psi-collect.js');
@@ -29,7 +30,7 @@ const DIST_FOLDER = path.join(__dirname, '../dist');
  * @return {Promise<{app: Parameters<typeof createHttpServer>[1], storageMethod: StorageMethod}>}
  */
 async function createApp(options) {
-  const {storage} = options;
+  const {storage, useBodyParser} = options;
 
   log('[createApp] initializing storage method');
   const storageMethod = StorageMethod.from(storage);
@@ -43,9 +44,12 @@ async function createApp(options) {
   // While LHCI should be served behind nginx/apache that handles compression, it won't always be.
   app.use(compression());
 
-  // 1. Support large payloads because LHRs are big.
-  // 2. Support JSON primitives because `PUT /builds/<id>/lifecycle "sealed"`
-  app.use(bodyParser.json({limit: '10mb', strict: false}));
+  if (typeof useBodyParser === 'undefined' || useBodyParser) {
+    // 1. Optional if you want to overwrite by other middleware like koa or fastify
+    // 2. Support large payloads because LHRs are big.
+    // 3. Support JSON primitives because `PUT /builds/<id>/lifecycle "sealed"`
+    app.use(bodyParser.json({limit: '10mb', strict: false}));
+  }
 
   // Add a health check route before auth
   app.use('/healthz', (_, res) => res.send('healthy'));
@@ -57,6 +61,7 @@ async function createApp(options) {
   app.get('/', (_, res) => res.redirect('/app'));
   app.use('/version', (_, res) => res.send(version));
   app.use('/v1/projects', createProjectsRouter(context));
+  app.use('/v1/viewer', createViewerRouter(options));
   app.use('/app', express.static(DIST_FOLDER));
   app.get('/app/*', (_, res) => res.sendFile(path.join(DIST_FOLDER, 'index.html')));
   app.use(errorMiddleware);

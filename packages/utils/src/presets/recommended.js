@@ -19,7 +19,6 @@ module.exports = {
     'mainthread-work-breakdown': ['warn', {}],
     'max-potential-fid': ['warn', {}],
     'speed-index': ['warn', {}],
-    'uses-rel-preload': ['warn', {}],
     interactive: ['warn', {}],
     // Flaky score but non-flaky details (error, maxLength)
     'duplicated-javascript': ['warn', {maxLength: 0}], // warn until https://github.com/GoogleChrome/lighthouse/issues/11285 is fixed
@@ -35,7 +34,6 @@ module.exports = {
     'uses-responsive-images': ['error', {maxLength: 0}],
     'uses-text-compression': ['error', {maxLength: 0}],
     // Audits that don't typically apply in dev environments or are more opinionated (warn)
-    'redirects-http': ['off', {}], // not useful for the dev server
     'uses-http2': ['off', {}], // not useful for the dev server
     'long-tasks': ['off', {}], // too strict
 

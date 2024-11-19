@@ -317,7 +317,10 @@ class StorageMethod {
     const runsTimer = startDebugTimer('createStatistics.getRuns');
     const runs = await storageMethod.getRuns(projectId, buildId);
     /** @type {Array<Array<[LHCI.ServerCommand.Run, LH.Result]>>} */
-    const runsByUrl = _.groupBy(runs.map(run => [run, JSON.parse(run.lhr)]), ([run, _]) => run.url);
+    const runsByUrl = _.groupBy(
+      runs.map(run => [run, JSON.parse(run.lhr)]),
+      ([run, _]) => run.url
+    );
     runsTimer.end();
 
     log(`creating statistics for ${runs.length} run(s)`);
@@ -396,6 +399,8 @@ class StorageMethod {
    * @param {StrictOmit<LHCI.ServerCommand.Project, 'id'|'token'|'adminToken'>} unsavedProject
    */
   static async createProjectWithUniqueSlug(storageMethod, unsavedProject) {
+    if (typeof unsavedProject.name !== 'string') throw new Error('Project name missing');
+
     const maxLength = 40;
     let randomLength = 0;
     let slug = StorageMethod.generateSlug(unsavedProject.name, {maxLength, randomLength});
