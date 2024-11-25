@@ -5,12 +5,12 @@
  */
 'use strict';
 
-const path = require('path');
 const log = require('debug')('lhci:server:sql');
 const logVerbose = require('debug')('lhci:server:sql:verbose');
+const path = require('path');
 const uuid = require('uuid');
-const {Umzug, SequelizeStorage} = require('umzug');
-const {Sequelize, Op} = require('sequelize');
+const Umzug = require('umzug');
+const Sequelize = require('sequelize');
 const {omit, padEnd} = require('@lhci/utils/src/lodash.js');
 const {hashAdminToken, generateAdminToken} = require('../auth.js');
 const {E422} = require('../../express-utils.js');
@@ -82,6 +82,7 @@ function createSequelize(options) {
   const sequelizeOptions = {
     logging: /** @param {*} msg */ msg => logVerbose('[sequelize]', msg),
     ...options.sequelizeOptions,
+    operatorsAliases: false,
   };
 
   if (dialect === 'sqlite') {
@@ -133,29 +134,15 @@ function createSequelize(options) {
  */
 function createUmzug(sequelize, options) {
   return new Umzug({
-    logger: {
-      debug: msg => logVerbose('[umzug]', msg),
-      warn: msg => logVerbose('[umzug]', msg),
-      error: msg => logVerbose('[umzug]', msg),
-      info: msg => logVerbose('[umzug]', msg),
-    },
-    storage: new SequelizeStorage({
-      sequelize,
+    logging: /** @param {*} msg */ msg => logVerbose('[umzug]', msg),
+    storage: 'sequelize',
+    storageOptions: {
+      sequelize: /** @type {*} */ (sequelize),
       tableName: options.sqlMigrationOptions && options.sqlMigrationOptions.tableName,
-    }),
-    context: {queryInterface: sequelize.getQueryInterface(), options},
+    },
     migrations: {
-      glob: path.posix.join(__dirname.replaceAll('\\', '/'), 'migrations/*.js'),
-      resolve: ({name, path, context}) => {
-        if (!path) throw new Error('unexpected missing path');
-
-        const migration = require(path);
-        return {
-          name,
-          up: async () => migration.up(context),
-          down: async () => migration.down(context),
-        };
-      },
+      path: path.join(__dirname, 'migrations'),
+      params: [sequelize.getQueryInterface(), Sequelize, options],
     },
   });
 }
@@ -176,23 +163,14 @@ function normalizeStatistic(statistic) {
 /**
  * @typedef SqlState
  * @property {import('sequelize').Sequelize} sequelize
- * @property {import('sequelize').ModelDefined<LHCI.ServerCommand.Project, ProjectAttrs>} projectModel
- * @property {import('sequelize').ModelDefined<LHCI.ServerCommand.Build, BuildAttrs>} buildModel
- * @property {import('sequelize').ModelDefined<LHCI.ServerCommand.Run, RunAttrs>} runModel
- * @property {import('sequelize').ModelDefined<LHCI.ServerCommand.Statistic, StatisticAttrs>} statisticModel
+ * @property {import('sequelize').Model<LHCI.ServerCommand.Project, ProjectAttrs>} projectModel
+ * @property {import('sequelize').Model<LHCI.ServerCommand.Build, BuildAttrs>} buildModel
+ * @property {import('sequelize').Model<LHCI.ServerCommand.Run, RunAttrs>} runModel
+ * @property {import('sequelize').Model<LHCI.ServerCommand.Statistic, StatisticAttrs>} statisticModel
  */
 
-/**
- * Sort all records by most recently created
- * @type {import("sequelize").Order}
- */
-const orderByCreated = [['createdAt', 'DESC']];
-
-/**
- * Sort all records by name
- * @type {import("sequelize").Order}
- */
-const orderByName = [['name', 'ASC']];
+/** Sort all records by most recently created */
+const order = [['createdAt', 'desc']];
 
 class SqlStorageMethod {
   constructor() {
@@ -210,44 +188,20 @@ class SqlStorageMethod {
   }
 
   /**
-   * @template {Object} T1
-   * @template {Object} T2
+   * @template T1
+   * @template T2
    * @param {import('sequelize').Model<T1, T2>} model
-   * @return {T1}
-   */
-  _value(model) {
-    return model.dataValues;
-  }
-
-  /**
-   * @template {Object} T1
-   * @template {Object} T2
-   * @param {import('sequelize').Model<T1, T2> | null} model
-   * @return {T1 | null}
-   */
-  _valueOrNull(model) {
-    if (!model) return null;
-    return model.dataValues;
-  }
-
-  /**
-   * @template {Object} T1
-   * @template {Object} T2
-   * @param {import('sequelize').ModelDefined<T1, T2>} model
    * @param {string} pk
-   * @return {Promise<T1 | null>}
    */
   async _findByPk(model, pk) {
-    const result = await model.findByPk(validateUuidOrEmpty(pk));
-    return this._valueOrNull(result);
+    return model.findByPk(validateUuidOrEmpty(pk));
   }
 
   /**
-   * @template {Object} T1
-   * @template {Object} T2
-   * @param {import('sequelize').ModelDefined<T1, T2>} model
+   * @template T1
+   * @template T2
+   * @param {import('sequelize').Model<T1, T2>} model
    * @param {import('sequelize').FindOptions<T1 & T2>} options
-   * @return {Promise<T1[]>}
    */
   async _findAll(model, options) {
     if (options.where) {
@@ -260,8 +214,7 @@ class SqlStorageMethod {
       }
     }
 
-    const result = await model.findAll(options);
-    return result.map(this._value);
+    return model.findAll(options);
   }
 
   /**
@@ -318,7 +271,7 @@ class SqlStorageMethod {
    */
   async getProjects() {
     const {projectModel} = this._sql();
-    const projects = await this._findAll(projectModel, {order: orderByName});
+    const projects = await this._findAll(projectModel, {order});
     return projects.map(clone);
   }
 
@@ -391,7 +344,6 @@ class SqlStorageMethod {
    */
   async _createProject(unsavedProject) {
     const {projectModel} = this._sql();
-    if (typeof unsavedProject.name !== 'string') throw new E422('Project name missing');
     if (unsavedProject.name.length < 4) throw new E422('Project name too short');
     const projectId = uuid.v4();
     const adminToken = generateAdminToken();
@@ -405,7 +357,7 @@ class SqlStorageMethod {
 
     // Replace the adminToken with the original non-hashed version.
     // This will be the only time it's readable other than reset.
-    return {...clone(this._value(project)), adminToken};
+    return {...clone(project), adminToken};
   }
 
   /**
@@ -435,7 +387,7 @@ class SqlStorageMethod {
     const {buildModel} = this._sql();
     const builds = await this._findAll(buildModel, {
       where: {projectId, ...omit(options, ['limit'], {dropUndefined: true})},
-      order: orderByCreated,
+      order,
       limit: options.limit || 10,
     });
     return clone(builds);
@@ -475,7 +427,7 @@ class SqlStorageMethod {
     if (existingForHash) throw new E422(`Build already exists for hash "${unsavedBuild.hash}"`);
 
     const build = await buildModel.create({...unsavedBuild, id: uuid.v4()});
-    return clone(this._value(build));
+    return clone(build);
   }
 
   /**
@@ -507,7 +459,10 @@ class SqlStorageMethod {
       const runIds = representativeRuns.map(run => run.id);
 
       log('[sealBuild] updating run representative flag');
-      await runModel.update({representative: true}, {where: {id: {[Op.in]: runIds}}, transaction});
+      await runModel.update(
+        {representative: true},
+        {where: {id: {[Sequelize.Op.in]: runIds}}, transaction}
+      );
 
       log('[sealBuild] committing transaction');
       await transaction.commit();
@@ -525,10 +480,10 @@ class SqlStorageMethod {
   async findBuildsBeforeTimestamp(runAt) {
     const {buildModel} = this._sql();
     const oldBuilds = await buildModel.findAll({
-      where: {runAt: {[Op.lte]: runAt}},
+      where: {runAt: {[Sequelize.Op.lte]: runAt}},
       order: [['runAt', 'ASC']],
     });
-    return oldBuilds.map(this._value);
+    return oldBuilds;
   }
 
   /**
@@ -586,12 +541,12 @@ class SqlStorageMethod {
     const lowerUuid = formatAsUuid(prefix, '0');
     const upperUuid = formatAsUuid(prefix, 'f');
     const builds = await buildModel.findAll({
-      where: {id: {[Op.gte]: lowerUuid, [Op.lte]: upperUuid}, projectId},
+      where: {id: {[Sequelize.Op.gte]: lowerUuid, [Sequelize.Op.lte]: upperUuid}, projectId},
       limit: 2,
     });
 
     if (builds.length !== 1) return undefined;
-    return clone(this._value(builds[0]));
+    return clone(builds[0]);
   }
 
   /**
@@ -617,11 +572,11 @@ class SqlStorageMethod {
     const where = {
       projectId: build.projectId,
       branch: project.baseBranch,
-      id: {[Op.ne]: build.id},
+      id: {[Sequelize.Op.ne]: build.id},
     };
 
-    const nearestBuildBefore = await this._findAll(buildModel, {
-      where: {...where, runAt: {[Op.lte]: build.runAt}},
+    const nearestBuildBefore = await buildModel.findAll({
+      where: {...where, runAt: {[Sequelize.Op.lte]: build.runAt}},
       order: [['runAt', 'DESC']],
       limit: 1,
     });
@@ -630,8 +585,8 @@ class SqlStorageMethod {
       return nearestBuildBefore[0];
     }
 
-    const nearestBuildAfter = await this._findAll(buildModel, {
-      where: {...where, runAt: {[Op.gte]: build.runAt}},
+    const nearestBuildAfter = await buildModel.findAll({
+      where: {...where, runAt: {[Sequelize.Op.gte]: build.runAt}},
       order: [['runAt', 'ASC']],
       limit: 1,
     });
@@ -653,10 +608,7 @@ class SqlStorageMethod {
    */
   async getRuns(projectId, buildId, options) {
     const {runModel} = this._sql();
-    const runs = await this._findAll(runModel, {
-      where: {...options, projectId, buildId},
-      order: orderByCreated,
-    });
+    const runs = await this._findAll(runModel, {where: {...options, projectId, buildId}, order});
     return clone(runs);
   }
 
@@ -690,7 +642,7 @@ class SqlStorageMethod {
     if (unsavedRun.url.length > 256) throw new E422('URL too long');
 
     const run = await runModel.create({...unsavedRun, representative: false, id: uuid.v4()});
-    return clone(this._value(run));
+    return clone(run);
   }
 
   /**
@@ -711,17 +663,15 @@ class SqlStorageMethod {
     const transaction = context && context.transaction;
     const {statisticModel} = this._sql();
     logVerbose('[_createOrUpdateStatistic] looking up existing statistic');
-    const existing = this._valueOrNull(
-      await statisticModel.findOne({
-        where: {
-          projectId: unsavedStatistic.projectId,
-          buildId: unsavedStatistic.buildId,
-          url: unsavedStatistic.url,
-          name: unsavedStatistic.name,
-        },
-        transaction,
-      })
-    );
+    const existing = await statisticModel.findOne({
+      where: {
+        projectId: unsavedStatistic.projectId,
+        buildId: unsavedStatistic.buildId,
+        url: unsavedStatistic.url,
+        name: unsavedStatistic.name,
+      },
+      transaction,
+    });
 
     /** @type {LHCI.ServerCommand.Statistic} */
     let statistic;
@@ -733,9 +683,7 @@ class SqlStorageMethod {
       statistic = updated;
     } else {
       logVerbose('[_createOrUpdateStatistic] no existing statistic found, creating one');
-      statistic = this._value(
-        await statisticModel.create({...unsavedStatistic, id: uuid.v4()}, {transaction})
-      );
+      statistic = await statisticModel.create({...unsavedStatistic, id: uuid.v4()}, {transaction});
     }
 
     return normalizeStatistic(clone(statistic));
@@ -748,10 +696,7 @@ class SqlStorageMethod {
    */
   async _getStatistics(projectId, buildId) {
     const {statisticModel} = this._sql();
-    const statistics = await this._findAll(statisticModel, {
-      where: {projectId, buildId},
-      order: orderByCreated,
-    });
+    const statistics = await this._findAll(statisticModel, {where: {projectId, buildId}, order});
     return clone(statistics).map(normalizeStatistic);
   }
 
